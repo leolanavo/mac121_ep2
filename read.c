@@ -59,7 +59,7 @@ int availablePos (int** tab, pos crt, int mov, int lin, int col) {
                 break;
             }
 
-            if (tab[crt.l][crt.c + 1] == 1 && tab[crt.l][crt.c + 2] == 0) {
+            if (tab[crt.l][crt.c + 1] == 1 && tab[crt.l][crt.c + 2] == -1) {
                 return 1;
             }
 
@@ -69,7 +69,7 @@ int availablePos (int** tab, pos crt, int mov, int lin, int col) {
                 break;
             }
 
-            if (tab[crt.l - 1][crt.c] == 1 && tab[crt.l - 2][crt.c] == 0) {
+            if (tab[crt.l - 1][crt.c] == 1 && tab[crt.l - 2][crt.c] == -1) {
                 return 1;
             }
 
@@ -79,7 +79,7 @@ int availablePos (int** tab, pos crt, int mov, int lin, int col) {
                 break;
             }
 
-            if (tab[crt.l][crt.c - 1] == 1 && tab[crt.l][crt.c - 2] == 0) {
+            if (tab[crt.l][crt.c - 1] == 1 && tab[crt.l][crt.c - 2] == -1) {
                 return 1;
             }
 
@@ -89,7 +89,7 @@ int availablePos (int** tab, pos crt, int mov, int lin, int col) {
                 break;
             }
 
-            if (tab[crt.l + 1][crt.c] == 1 && tab[crt.l + 2][crt.c] == 0) {
+            if (tab[crt.l + 1][crt.c] == 1 && tab[crt.l + 2][crt.c] == -1) {
                 return 1;
             }
     
@@ -106,25 +106,25 @@ void movePiece (int** tab, pos crt, int mov) {
     switch (mov) {
         case 0:
 
-            tab[crt.l][crt.c + 1] = 0;
+            tab[crt.l][crt.c + 1] = -1;
             tab[crt.l][crt.c + 2] = 1;
             break;
 
         case 1:
 
-            tab[crt.l - 1][crt.c] = 0;
+            tab[crt.l - 1][crt.c] = -1;
             tab[crt.l - 2][crt.c] = 1;
             break;
 
         case 2:
 
-            tab[crt.l][crt.c - 1] = 0;
+            tab[crt.l][crt.c - 1] = -1;
             tab[crt.l][crt.c - 2] = 1;
             break;
 
         case 3:
 
-            tab[crt.l + 1][crt.c] = 0;
+            tab[crt.l + 1][crt.c] = -1;
             tab[crt.l + 2][crt.c] = 1;
             break;
     }
