@@ -96,21 +96,24 @@ void MovePiece (int** tab, pos* crt, int mov) {
     }
 }
 
-/*Gera o tabuleiro final*/
-void finalMatrix (int** tab, int lin, int col) {
+/*Gera o tabuleiro final, e enquanto isso acha quantas peças há*/
+int** finalMatrix (int** tab, int** tab_f, int lin, int col, int* p, int* h) {
     int i, j, x;
+
     for (i = 0; i < lin; i++) {
         for (j = 0; j < col; j++) {
             x = tab[i][j];
             if (x == 1) {
-                tab[i][j] = -1;
+                *(p) += 1;
+                tab_f[i][j] = -1;
             }
             else if (x == -1) {
-                tab[i][j] = 1;
+                *(h) += 1;
+                tab_f[i][j] = 1;
             }
         }
     }
-    printMatrix(tab, lin, col);
+    return(tab_f);
 }
 
 /*Imprime os posimentos*/
@@ -174,18 +177,29 @@ void pegSolitaire (int** tab, int lin, int col) {
 }
 
 int main () {
-    int lin, col, **tab;
+    int lin, col, pieces, holes, *p, *h,**tab, **tab_f;
+    pieces = 0;
+    holes = 0;
+    p = &pieces;
+    h = &holes;
 
     scanf("%d %d", &lin, &col);
     tab = createMatrix(lin, col);
+    tab_f = createMatrix(lin, col);
+    
     readMatrix(tab, lin, col);
+    
+    tab_f = finalMatrix(tab, tab_f, lin, col, p, h);
+
+    printf("Pieces: %d -- Holes: %d\n", pieces, holes);
 
     printf("Entrada\n");
     printMatrix(tab, lin, col);
     
     printf("Saída\n");
-    finalMatrix(tab, lin, col);
+    printMatrix(tab_f, lin, col);
     
     destroyMatrix(tab, lin);
+    destroyMatrix(tab_f, lin);
     return 0;
 }
