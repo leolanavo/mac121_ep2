@@ -133,8 +133,8 @@ void MovePiece (int** tab, pos* posi, int middle) {
 void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab_f ) {
     
     int ok, middle, mov, bck, eql;
-    stack *hist;          
-    pos *crt, *aux;       
+    stack *hist;     /*"hist" vêm de "history"*/
+    pos *crt, *aux;  /*"crt" vêm de "current"*/       
 
     if (pieces < holes) {
         printf("Impossivel\n");
@@ -163,6 +163,7 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
 
             /*Laço para varrer as linhas da matriz*/
             for (;crt->l < lin; crt->l++) {
+                
                 if (bck == 0) crt->c = 0;
 
                 /*Laço para varrer as colunas da matriz*/
@@ -195,12 +196,17 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
                             mov = 1;
                             
                             MovePiece(tab, crt, middle);
+                            printf("Ida: ");
+                            printPos(crt);
 
                             /*Empilha a struct, com a posição final, após o
                             movimento.*/
                             add(crt, hist);
 
-                            crt->l = crt->c = -1;
+                            /*Reinicia a leitura de matriz.*/
+
+                            crt->l = 0; 
+                            crt->c = -1;
 
                             /*O próximo buraco tem que começar a ser avaliada, 
                             a partir do movimento 0.*/
@@ -231,8 +237,6 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
             }
             
             eql = 0;
-
-            /*Desempilha*/
             free(crt);
             crt = pop(hist);
             
@@ -243,6 +247,8 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
             /*Acende a flag para o backtracking*/
             bck = 1;
 
+            printf("Volta: ");
+            printPos(crt);
             /*Desfaz o movimento desempilhado*/
             MovePiece(tab, crt, middle);
 
