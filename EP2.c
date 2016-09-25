@@ -132,9 +132,9 @@ void MovePiece (int** tab, pos* posi, int middle) {
 
 void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab_f ) {
     
-    int ok, middle, mov, bck, eql;
+    int ok, middle, bck, eql, count;
     stack *hist;     /*"hist" vêm de "history"*/
-    pos *crt, *aux;  /*"crt" vêm de "current"*/       
+    pos *crt, *aux;  /*"crt" vêm de "current"*/
 
     if (pieces < holes) {
         printf("Impossivel\n");
@@ -148,33 +148,34 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
 
     bck = 0;
     eql = 0;
+    count = 0;
 
     /*Laço enquanto as matrizes forem diferentes*/
     while(cmpMatrix(tab, tab_f, lin, col) == 0) {
-
-        /*Evita que a função faça mais movimentos que o necessário*/
-        if (holes == pieces) eql = 1;
         
         if (holes != pieces) {
-            
-            mov = 0; /*Flag para saber se ocorreu algum movimento*/
 
             if (bck == 0) crt->l = 0;
-
+            
             /*Laço para varrer as linhas da matriz*/
             for (;crt->l < lin; crt->l++) {
                 
                 if (bck == 0) crt->c = 0;
-
+        
                 /*Laço para varrer as colunas da matriz*/
                 for (;crt->c < col; crt->c++) {
                     
+                    if (holes == pieces) {
+                        if (cmpMatrix(tab, tab_f, lin, col)) return;
+                        eql = 1;
+                    }
+
+                    
                     /*Rastreia buracos e ignora peças e lugares inválidos*/
-                    if(tab[crt->l][crt->c] == -1) {
+                    if(tab[crt->l][crt->c] == -1 && eql == 0) {
                         
                         bck = 0; /*Zera a flag do backtracking*/
-                        
-                        ok = 0; /*Flag para movimento válido*/
+                        ok = 0;  /*Flag para movimento válido*/
                         
                         /*Checa se um dos 4 movimentos é válido*/
                         while(crt->m < 4 && ok == 0) {
@@ -191,71 +192,58 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
                             middle = -1;
                             
                             holes++;
-
-                            /*Reinicia o laço de leitura de matriz*/
-                            mov = 1;
                             
                             MovePiece(tab, crt, middle);
-                            printf("Ida: ");
-                            printPos(crt);
+                            count++;
+                            printf("%d\n", holes);
 
                             /*Empilha a struct, com a posição final, após o
                             movimento.*/
                             add(crt, hist);
 
                             /*Reinicia a leitura de matriz.*/
-
-                            crt->l = 0; 
+                            crt->l = 0;
                             crt->c = -1;
 
                             /*O próximo buraco tem que começar a ser avaliada, 
                             a partir do movimento 0.*/
                             crt->m = 0;
                         }
-                        
-                        else {
-                            crt->m = 0;
-                        }
+                        else crt->m = 0;
                     }
-                    else {
-                        crt->m = 0;
-                    }
+                    else crt->m = 0;
                 }
             }
         }
 
         /*Backtrcking*/
-        /*mov == 0, terminou de varrer a matriz e não fez nenhum movimento*/
-        /*eql == 1, holes == pieces, mas a matriz é diferente da matriz final*/
-        if (mov == 0 || eql == 1) {
+        if(emptyStack(hist) == 1) {
+            printf("Impossível\n");
+            destroyStack(hist);
+            return;
+        }
+
+        free(crt);
+        crt = pop(hist);
             
+        /*middle == 1, para desfazer um movimento na MovePiece*/
+        middle = 1;
+        holes--;
+        eql = 0;
 
-            if(emptyStack(hist) == 1) {
-                printf("Impossível\n");
-                destroyStack(hist);
-                return;
-            }
-            
-            eql = 0;
-            free(crt);
-            crt = pop(hist);
-            
-            /*middle == 1, para desfazer um movimento na MovePiece*/
-            middle = 1;
-            holes--;
+        /*Acende a flag para o backtracking*/
+        bck = 1;
 
-            /*Acende a flag para o backtracking*/
-            bck = 1;
+        /*Desfaz o movimento desempilhado*/
+        MovePiece(tab, crt, middle);
+        printf("Volta \n");
+        printPos(crt);
+        printf("\n");
 
-            printf("Volta: ");
-            printPos(crt);
-            /*Desfaz o movimento desempilhado*/
-            MovePiece(tab, crt, middle);
-
-            /*Analisa a posição desempilhada a partir do próximo movimento*/
-            crt->m++;
+        /*Analisa a posição desempilhada a partir do próximo movimento*/
+        crt->m++;
         } 
-    }
+        
 
     free(crt);
     free(aux);
