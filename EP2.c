@@ -162,11 +162,11 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
             if (bck == 0) crt->l = 0;
 
             /*Laço para varrer as linhas da matriz*/
-            for (;crt->l < lin && mov == 0; crt->l++) {
+            for (;crt->l < lin && mov == 1; crt->l++) {
                 if (bck == 0) crt->c = 0;
 
                 /*Laço para varrer as colunas da matriz*/
-                for (;crt->c < col && mov == 0; crt->c++) {
+                for (;crt->c < col && mov == 1; crt->c++) {
                     
                     /*Rastreia buracos e ignora peças e lugares inválidos*/
                     if(tab[crt->l][crt->c] == -1) {
