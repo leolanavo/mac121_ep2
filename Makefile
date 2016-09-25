@@ -1,5 +1,5 @@
 CC:=gcc
-CFLAGS:=-Wall -pedantic -O2 -ansi
+CFLAGS:=-Wall -pedantic -ansi -g
 
 EP2: EP2.o matrix.o stack.o
 	$(CC) $(CFLAGS) -o $@ $^
@@ -13,4 +13,4 @@ EP2: EP2.o matrix.o stack.o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f *.o
+	rm -rf *.o
