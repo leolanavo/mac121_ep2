@@ -162,11 +162,11 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
             if (bck == 0) crt->l = 0;
 
             /*Laço para varrer as linhas da matriz*/
-            for (;crt->l < lin && mov == 1; crt->l++) {
+            for (;crt->l < lin; crt->l++) {
                 if (bck == 0) crt->c = 0;
 
                 /*Laço para varrer as colunas da matriz*/
-                for (;crt->c < col && mov == 1; crt->c++) {
+                for (;crt->c < col; crt->c++) {
                     
                     /*Rastreia buracos e ignora peças e lugares inválidos*/
                     if(tab[crt->l][crt->c] == -1) {
@@ -199,6 +199,8 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
                             /*Empilha a struct, com a posição final, após o
                             movimento.*/
                             add(crt, hist);
+
+                            crt->l = crt->c = -1;
 
                             /*O próximo buraco tem que começar a ser avaliada, 
                             a partir do movimento 0.*/

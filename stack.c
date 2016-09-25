@@ -8,7 +8,7 @@ stack* createStack (int size) {
     
     p = malloc(sizeof(stack));
     p->size = size;
-    p->data = malloc(size * sizeof(int));
+    p->data = malloc(size * sizeof(short int));
     p->top = 0;
 
     return (p);
