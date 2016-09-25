@@ -25,11 +25,10 @@ int** finalMatrix (int** tab, int** tab_f, int lin, int col, int* p, int* h) {
 }
 
 /*Copia uma pos para outra*/
-pos* copyPos (pos* posi1, pos* posi2) {
+void copyPos (pos* posi1, pos* posi2) {
     posi2->l = posi1->l;
     posi2->c = posi1->c;
     posi2->m = posi1->m;
-    return(posi2);
 }
 
 /*Printa uma pos*/
@@ -133,7 +132,7 @@ void MovePiece (int** tab, pos* posi, int middle) {
 
 void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab_f ) {
     
-    int ok, middle, mov, bck, eql, count;
+    int ok, middle, mov, bck, eql;
     stack *hist;          
     pos *crt, *aux;       
 
@@ -149,7 +148,6 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
 
     bck = 0;
     eql = 0;
-    count = 0;
 
     /*Laço enquanto as matrizes forem diferentes*/
     while(cmpMatrix(tab, tab_f, lin, col) == 0) {
@@ -159,19 +157,19 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
         
         if (holes != pieces) {
             
-            mov = 0; /*flag para saber se ocorreu algum movimento*/
+            mov = 0; /*Flag para saber se ocorreu algum movimento*/
 
             if (bck == 0) crt->l = 0;
 
             /*Laço para varrer as linhas da matriz*/
-            for (;crt->l < lin; crt->l++) {
+            for (;crt->l < lin && mov == 0; crt->l++) {
                 if (bck == 0) crt->c = 0;
 
                 /*Laço para varrer as colunas da matriz*/
-                for (;crt->c < col; crt->c++) {
+                for (;crt->c < col && mov == 0; crt->c++) {
                     
                     /*Rastreia buracos e ignora peças e lugares inválidos*/
-                    if(tab[crt->l][crt->c] == -1 || bck == 1) {
+                    if(tab[crt->l][crt->c] == -1) {
                         
                         bck = 0; /*Zera a flag do backtracking*/
                         
@@ -187,22 +185,20 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
                         percorrendo a matriz.*/
                         if (ok == 1) {
                             
-                            /*Copia para a aux, para não alterar a crt, e
-                            errar na hora de continuar percorrendo a matriz.*/
-                            aux = copyPos(crt, aux);
-                            
                             /*Flag para a função MovePiece. Faz um movimento
                             normalmente*/
                             middle = -1;
                             
                             holes++;
+
+                            /*Reinicia o laço de leitura de matriz*/
                             mov = 1;
                             
-                            MovePiece(tab, aux, middle);
+                            MovePiece(tab, crt, middle);
 
                             /*Empilha a struct, com a posição final, após o
                             movimento.*/
-                            add(aux, hist);
+                            add(crt, hist);
 
                             /*O próximo buraco tem que começar a ser avaliada, 
                             a partir do movimento 0.*/
@@ -224,6 +220,8 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
         /*mov == 0, terminou de varrer a matriz e não fez nenhum movimento*/
         /*eql == 1, holes == pieces, mas a matriz é diferente da matriz final*/
         if (mov == 0 || eql == 1) {
+            
+
             if(emptyStack(hist) == 1) {
                 printf("Impossível\n");
                 destroyStack(hist);
@@ -233,13 +231,14 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
             eql = 0;
 
             /*Desempilha*/
+            free(crt);
             crt = pop(hist);
             
             /*middle == 1, para desfazer um movimento na MovePiece*/
             middle = 1;
             holes--;
 
-            /*Ascende a flag para o backtracking*/
+            /*Acende a flag para o backtracking*/
             bck = 1;
 
             /*Desfaz o movimento desempilhado*/
@@ -249,6 +248,11 @@ void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab
             crt->m++;
         } 
     }
+
+    free(crt);
+    free(aux);
+    crt = NULL;
+    aux = NULL;
     destroyStack(hist);
 }
 
