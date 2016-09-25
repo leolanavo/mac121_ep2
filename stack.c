@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include "types.h"
 
@@ -7,32 +8,39 @@ stack* createStack (int size) {
     
     p = malloc(sizeof(stack));
     p->size = size;
-    p->data = malloc(size * sizeof(pos));
+    p->data = malloc(size * sizeof(int));
     p->top = 0;
 
     return (p);
 }
 
 /*Empila um posimento*/
-void add (pos* num, stack* p) {
-    p->data[p->top] = num;
-    p->top++;
+void add (pos* posi, stack* p) {
+    
+    p->data[p->top] = posi->l;
+    p->data[p->top + 1] = posi->c;
+    p->data[p->top + 2] = posi->m;
+    
+    p->top += 3;
 }
 
 /*Desempilha um inteiro*/
 pos* pop (stack* p) {
-    p->top--;
-    return (p->data[p->top]);
+    pos* posi;
+    
+    posi = malloc(sizeof(posi));
+
+    posi->m = p->data[p->top - 1];
+    posi->c = p->data[p->top - 2];
+    posi->l = p->data[p->top - 3];
+    
+    p->top -= 3;
+    return (posi);
 }
 
 /*Verifica se a pilha está vazia*/
 int emptyStack (stack* p) {
     return (p->top == 0);
-}
-
-/*Devolve qual elemento está no topo da pilha*/
-pos* getTop (stack* p) {
-    return (p->data[p->top - 1]);
 }
 
 /*Destrói a pilha*/

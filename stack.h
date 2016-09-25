@@ -1,3 +1,4 @@
+/*Este arquivo contém as funções de pilhas*/
 #include "types.h"
 
 #ifndef STACK_H
@@ -14,9 +15,6 @@ pos* pop (stack* p);
 
 /*Verifica se a pilha está vazia*/
 int emptyStack (stack* p);
-
-/*Devolve qual elemento está no topo da pilha*/
-pos getTop (stack* p);
 
 /*Destrói a pilha*/
 void destroyStack (stack* p);
