@@ -14,4 +14,8 @@ void destroyMatrix (int** matrix, int lin);
 /*Imprime uma matriz lin X col.*/
 void printMatrix (int** matrix, int lin, int col);
 
+/*Compara duas matrizes e retorna 1 se elas forem iguais, 0
+caso contrário*/
+int cmpMatrix (int** matrix1, int** matrix2, int lin, int col);
+
 #endif
