@@ -4,7 +4,7 @@
 #include "stack.h"
 #include "matrix.h"
 
-/*Gera o tabuleiro final, e enquanto isso acha quantas peças há*/
+/*Gera o tabuleiro final, e enquanto isso acha quantas peças e buracos há*/
 int** finalMatrix (int** tab, int** tab_f, int lin, int col, int* p, int* h) {
     int i, j, x;
 
@@ -24,16 +24,49 @@ int** finalMatrix (int** tab, int** tab_f, int lin, int col, int* p, int* h) {
     return(tab_f);
 }
 
-/*Copia uma pos para outra*/
-void copyPos (pos* posi1, pos* posi2) {
-    posi2->l = posi1->l;
-    posi2->c = posi1->c;
-    posi2->m = posi1->m;
+/*Rastreia a origem de uma posição*/
+pos originPos (pos posi1, pos posi2) {
+    
+    switch (posi1.m) {
+        case 0:
+            posi2.l = posi1.l;
+            posi2.c = posi1.c - 2;
+            break;
+
+        case 1:
+            posi2.c = posi1.c;
+            posi2.l = posi1.l + 2;
+            break;
+
+        case 2:
+            posi2.l = posi1.l;
+            posi2.c = posi1.c + 2;
+            break;
+
+        case 3:
+            posi2.c = posi1.c;
+            posi2.l = posi1.l - 2;
+            break;
+
+        default:
+            break;
+    }
+
+    return (posi2);
 }
 
-/*Printa uma pos*/
-void printPos (pos* posi) {
-    printf("%d:%d:%d\n", posi->l, posi->c, posi->m);
+/*Imprime os movimentos das peças*/
+void printPath (stack* p) {
+    int i;
+    pos final, origin;
+
+    for (i = 0; i < p->top; i += 3) {
+        final.l = p->data[i];
+        final.c = p->data[i + 1];
+        final.m = p->data[i + 2];
+        origin = originPos(final, origin);
+        printf("%d:%d-%d:%d\n", origin.l, origin.c, final.l, final.c);
+    }
 }
 
 /*Checa se o movimento da peça pode ser executado.*/
@@ -44,7 +77,7 @@ int availablePos (int** tab, pos* crt, int lin, int col) {
             /*Cada case tem seu if para evitar segmentation fault.*/
             if (crt->c + 2 >= col) break;
 
-            if (tab[crt->l][crt->c + 1] == 1 && tab[crt->l][crt->c + 2] == 1)
+            if (tab[crt->l][crt->c + 1] == 1 && tab[crt->l][crt->c + 2] == -1)
                 return 1;
 
             break;
@@ -53,7 +86,7 @@ int availablePos (int** tab, pos* crt, int lin, int col) {
 
             if (crt->l - 2 < 0) break;
 
-            if (tab[crt->l - 1][crt->c] == 1 && tab[crt->l - 2][crt->c] == 1)
+            if (tab[crt->l - 1][crt->c] == 1 && tab[crt->l - 2][crt->c] == -1)
                 return 1;
 
             break;
@@ -62,7 +95,7 @@ int availablePos (int** tab, pos* crt, int lin, int col) {
 
             if (crt->c - 2 < 0) break;
 
-            if (tab[crt->l][crt->c - 1] == 1 && tab[crt->l][crt->c - 2] == 1)
+            if (tab[crt->l][crt->c - 1] == 1 && tab[crt->l][crt->c - 2] == -1)
                 return 1;
 
             break;
@@ -71,7 +104,7 @@ int availablePos (int** tab, pos* crt, int lin, int col) {
 
             if (crt->l + 2 >= lin) break;
 
-            if (tab[crt->l + 1][crt->c] == 1 && tab[crt->l + 2][crt->c] == 1)
+            if (tab[crt->l + 1][crt->c] == 1 && tab[crt->l + 2][crt->c] == -1)
                 return 1;
             
             break;
@@ -89,7 +122,7 @@ void MovePiece (int** tab, pos* posi, int middle) {
     
     int mov; /*Variável para manipular posi->m sem alterá-lo*/
     
-    tab[posi->l][posi->c] = 1;
+    tab[posi->l][posi->c] = -1;
 
     /*middle == 1, significa que o programa irá reverter um movimento*/
     if (middle == 1) mov = (posi->m + 2)%4;
@@ -99,28 +132,28 @@ void MovePiece (int** tab, pos* posi, int middle) {
         case 0:
 
             tab[posi->l][posi->c + 1] = middle;
-            tab[posi->l][posi->c + 2] = -1;
+            tab[posi->l][posi->c + 2] = 1;
             posi->c += 2;
             break;
 
         case 1:
 
             tab[posi->l - 1][posi->c] = middle;
-            tab[posi->l - 2][posi->c] = -1;
+            tab[posi->l - 2][posi->c] = 1;
             posi->l -= 2;
             break;
 
         case 2:
 
             tab[posi->l][posi->c - 1] = middle;
-            tab[posi->l][posi->c - 2] = -1;
+            tab[posi->l][posi->c - 2] = 1;
             posi->c -= 2;
             break;
 
         case 3:
 
             tab[posi->l + 1][posi->c] = middle;
-            tab[posi->l + 2][posi->c] = -1;
+            tab[posi->l + 2][posi->c] = 1;
             posi->l += 2;
             break;
         
@@ -130,129 +163,130 @@ void MovePiece (int** tab, pos* posi, int middle) {
     }
 }
 
+/*Simula o jogo para as configurações dadas*/
 void pegSolitaire (int** tab, int lin, int col, int pieces, int holes, int** tab_f ) {
     
-    int ok, middle, bck, eql, count;
+    int ok, middle, bck, eql, end;
     stack *hist;     /*"hist" vêm de "history"*/
-    pos *crt, *aux;  /*"crt" vêm de "current"*/
+    pos *crt;        /*"crt" vêm de "current"*/
 
+    /*Se há mais buracos que peças, então é impossível*/
     if (pieces < holes) {
         printf("Impossivel\n");
         return;
     }
 
     crt = malloc(sizeof(pos));
-    aux = malloc(sizeof(pos));
 
     hist = createStack(3*lin*col);
 
     bck = 0;
-    eql = 0;
-    count = 0;
+    eql = 0; /*Flag para pieces == holes, para tab_f é diferente de tab.*/
+    end = 0; /*Flag de final de loop, é acesa quando as matrizes tab e tab_f
+               são iguais.*/
 
     /*Laço enquanto as matrizes forem diferentes*/
-    while(cmpMatrix(tab, tab_f, lin, col) == 0) {
-        
-        if (holes != pieces) {
+    while(end == 0) {
 
-            if (bck == 0) crt->l = 0;
-            
-            /*Laço para varrer as linhas da matriz*/
-            for (;crt->l < lin; crt->l++) {
+        /*Zera, se não precisa começar a analisar da posição forcecida
+        pelo backtracking*/
+        if (bck == 0) crt->l = 0;
+
+        /*Laço para varrer as linhas da matriz*/
+        for (;crt->l < lin && end == 0; crt->l++) {
+
+            if (bck == 0) crt->c = 0;
+
+            /*Laço para varrer as colunas da matriz*/
+            for (;crt->c < col && end == 0; crt->c++) {
                 
-                if (bck == 0) crt->c = 0;
-        
-                /*Laço para varrer as colunas da matriz*/
-                for (;crt->c < col; crt->c++) {
-                    
-                    if (holes == pieces) {
-                        if (cmpMatrix(tab, tab_f, lin, col)) return;
-                        eql = 1;
+                if (bck == 0) crt->m = 0;
+
+                if (holes == pieces) {
+                    if (cmpMatrix(tab, tab_f, lin, col)) end = 1;
+                    eql = 1;
+                }
+
+                /*Rastreia peças, ignorando buracos e lugares inválidos.
+                Se holes == pieces, evita que faça movimentos desnecessários.*/
+                if(tab[crt->l][crt->c] == 1 && eql == 0 && end == 0) {
+
+                    bck = 0; /*Zera a flag do backtracking*/
+                    ok = 0;  /*Flag para movimento válido*/
+
+                    /*Checa se um dos 4 movimentos é válido*/
+                    while(crt->m < 4 && ok == 0) {
+                        if (availablePos(tab, crt, lin, col)) ok = 1;
+                        else crt->m++;
                     }
 
-                    
-                    /*Rastreia buracos e ignora peças e lugares inválidos*/
-                    if(tab[crt->l][crt->c] == -1 && eql == 0) {
-                        
-                        bck = 0; /*Zera a flag do backtracking*/
-                        ok = 0;  /*Flag para movimento válido*/
-                        
-                        /*Checa se um dos 4 movimentos é válido*/
-                        while(crt->m < 4 && ok == 0) {
-                            if (availablePos(tab, crt, lin, col)) ok = 1;
-                            else crt->m++;
-                        }
+                    /*Se um movimento é válido, ele move as peças e começa a
+                    percorrer a matriz novamente.*/
+                    if (ok == 1) {
 
-                        /*Se um movimento é válido, ele move as peças e continua
-                        percorrendo a matriz.*/
-                        if (ok == 1) {
-                            
-                            /*Flag para a função MovePiece. Faz um movimento
-                            normalmente*/
-                            middle = -1;
-                            
-                            holes++;
-                            
-                            MovePiece(tab, crt, middle);
-                            count++;
-                            printf("%d\n", holes);
+                        /*Flag para a função MovePiece. Faz um movimento
+                        normalmente*/
+                        middle = -1;
 
-                            /*Empilha a struct, com a posição final, após o
-                            movimento.*/
-                            add(crt, hist);
+                        holes++;
 
-                            /*Reinicia a leitura de matriz.*/
-                            crt->l = 0;
-                            crt->c = -1;
+                        MovePiece(tab, crt, middle);
 
-                            /*O próximo buraco tem que começar a ser avaliada, 
-                            a partir do movimento 0.*/
-                            crt->m = 0;
-                        }
-                        else crt->m = 0;
+                        /*Empilha a struct, com a posição final, após o
+                         movimento e o movimento feito.*/
+                        add(crt, hist);
+
+                        /*Reinicia a leitura da matriz.*/
+                        crt->l = 0;
+                        crt->c = -1;
+
+                        /*O próximo buraco tem que começar a ser avaliado 
+                        a partir do movimento 0.*/
+                        crt->m = 0;
                     }
-                    else crt->m = 0;
                 }
             }
         }
 
-        /*Backtrcking*/
-        if(emptyStack(hist) == 1) {
-            printf("Impossível\n");
-            destroyStack(hist);
-            return;
-        }
+        /*Cai no backtracking, caso não consiga fazer nenhum movimento
+        após varrer a matriz toda.*/
+        if (end == 0) {
+            /*Backtrcking*/
+            if(emptyStack(hist) == 1) {
+                printf("Impossível\n");
+                destroyStack(hist);
+                free(crt);
+                return;
+            }
 
-        free(crt);
-        crt = pop(hist);
+            free(crt);
+            crt = pop(hist);
             
-        /*middle == 1, para desfazer um movimento na MovePiece*/
-        middle = 1;
-        holes--;
-        eql = 0;
+            /*middle == 1, para desfazer um movimento na MovePiece*/
+            middle = 1;
+            holes--;
 
-        /*Acende a flag para o backtracking*/
-        bck = 1;
+            /*Reinicia a flag eql, pois se chegou aqui, pieces == holes, porém
+            as matrizes são diferentes.*/
+            eql = 0;
 
-        /*Desfaz o movimento desempilhado*/
-        MovePiece(tab, crt, middle);
-        printf("Volta \n");
-        printPos(crt);
-        printf("\n");
+            /*Acende a flag do backtracking*/
+            bck = 1;
 
-        /*Analisa a posição desempilhada a partir do próximo movimento*/
-        crt->m++;
-        } 
-        
+            /*Desfaz o movimento desempilhado*/
+            MovePiece(tab, crt, middle);
 
+            /*Analisa a posição desempilhada a partir do próximo movimento*/
+            crt->m++;
+        }
+    }
+
+    printPath(hist);
     free(crt);
-    free(aux);
     crt = NULL;
-    aux = NULL;
     destroyStack(hist);
+    return;
 }
-
-
 
 int main () {
     int lin, col, pieces, holes, *p, *h,**tab, **tab_f;
@@ -261,22 +295,18 @@ int main () {
     p = &pieces;
     h = &holes;
 
-    if (scanf("%d", &lin) != 1) printf("De porra\n");
-    if (scanf("%d", &col) != 1) printf("De carai\n");
+    scanf("%d", &lin);
+    scanf("%d", &col);
     
     tab = createMatrix(lin, col);
     tab_f = createMatrix(lin, col);
     
-    readMatrix(tab, lin, col);    
+    readMatrix(tab, lin, col);
+
+    /*A tab_f é o resultado esperado após o final da simulação.*/
     tab_f = finalMatrix(tab, tab_f, lin, col, p, h);
 
     pegSolitaire(tab, lin, col, pieces, holes, tab_f);
-
-    printf("Saída da função\n");
-    printMatrix(tab, lin, col);
-
-    printf("Saída Ideal\n");
-    printMatrix(tab_f, lin, col);
     
     destroyMatrix(tab, lin);
     destroyMatrix(tab_f, lin);
