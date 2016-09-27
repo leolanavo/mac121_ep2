@@ -44,15 +44,3 @@ void destroyMatrix (int** matrix, int lin) {
     free(matrix);
     matrix = NULL;
 }
-
-/*Imprime uma matriz lin X col.*/
-void printMatrix (int** matrix, int lin, int col) {
-    int i, j;
-    
-    for (i = 0; i < lin; i++) {
-        for (j = 0; j < col; j++) {
-            printf("%d ", matrix[i][j]);
-        }
-    printf("\n");
-    }
-}
