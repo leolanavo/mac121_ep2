@@ -1,7 +1,7 @@
 CC:=gcc
-CFLAGS:=-Wall -pedantic -ansi -g -O2
+CFLAGS:=-Wall -pedantic -ansi -O2
 
-EP2: EP2.o matrix.o stack.o
+ep2: restaUm.o matrix.o stack.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 #General formulas for making objects
@@ -14,3 +14,7 @@ EP2: EP2.o matrix.o stack.o
 
 clean:
 	rm -rf *.o
+	rm -rf *.aux
+	rm -rf *.log
+	rm -rf *.dvi
+	rm -rf *.synctex.gz
